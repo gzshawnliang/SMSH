@@ -1,0 +1,58 @@
+﻿@page "/"
+@using SMSH.Data
+@inject IJSRuntime JS
+@inject MediaStreamService MediaStreamService
+
+<PageTitle>首页</PageTitle>
+
+@foreach(var videoItem in VideoStreamList)
+{
+    <div class="card mb-2" style="margin-bottom:8px">
+        <div class="card-header pt-1 pb-1">
+            <div class="d-flex w-100 align-items-center justify-content-between">
+                <span class="fw-bold text-primary">@videoItem.Item2</span>
+                <button @onclick="() => OnClickRefreshVideo(videoItem.Item1)" type="button" class="btn btn-link btn-sm"><i class="bi bi-arrow-repeat"></i></button>
+            </div>
+        </div>
+        <video  id="@videoItem.Item1"
+                class="card-img" 
+                style="width:100%;height:auto"
+                muted
+                controls="controls" 
+                autoplay="autoplay"
+                preload="auto" 
+                playsinline="true" 
+                webkit-playsinline
+                x-webkit-airplay="true" 
+                x5-video-player-fullscreen="true"
+                x5-video-player-type="h5">
+            @*<source type="application/x-mpegURL" src="hls/test1.m3u8">*@
+        </video>        
+    </div>
+}
+
+@code
+{
+    bool isCalledJs = false;
+    List<Tuple<string, string>> VideoStreamList = new List<Tuple<string, string>>();
+    protected override async Task OnInitializedAsync() => VideoStreamList= await MediaStreamService.GetAvailableAsync();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (isCalledJs == false)
+        {
+            foreach (var item in VideoStreamList)
+            {
+                Console.WriteLine($"call displayVideo:{item.Item1}");
+                await JS.InvokeVoidAsync("displayVideo", item.Item1);
+                isCalledJs = true;
+            }
+        }
+    }
+
+    private void OnClickRefreshVideo(string streamId)
+    {
+        Console.WriteLine($"call displayVideo:{streamId}");
+        JS.InvokeVoidAsync("displayVideo", streamId);        
+    }
+}

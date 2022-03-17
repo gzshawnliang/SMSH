@@ -1,0 +1,286 @@
+﻿@using SMSH.Data;
+@inject IJSRuntime JS
+@inject MediaStreamService MediaStreamService
+@inject NavigationManager NavigationManager
+
+@page "/MediaStreamEdit/{streamId?}"
+
+<EditForm  Model="@currMediaStream" OnValidSubmit="@HandleValidSubmit" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="Title" class="form-label">名称</label>
+        <InputText id="Title" class="form-control" placeholder="" @bind-Value="currMediaStream.Title" disabled="@(!userCanInput)"></InputText>
+    </div>
+
+   <div class="mb-3">
+      <label for="StreamURL" class="form-label">Stream URL 地址</label>
+        <button type="button" @onclick="clickStreamUrl" class="btn btn-link">
+            <i class="bi bi-info-circle-fill"></i> 例子
+        </button>
+        <InputText id="StreamURL" class="form-control" placeholder="" disabled="@(!userCanInput)" @bind-Value="currMediaStream.StreamURL"></InputText>
+    </div>
+    <div class="mb-3">
+      <label for="FFmpegArg" class="form-label">FFmpeg 参数</label> 
+        <button type="button" @onclick="clickFFmpegArg" class="btn btn-link">
+            <i class="bi bi-info-circle-fill"></i> 例子
+        </button>
+        <InputText id="FFmpegArg" class="form-control" placeholder="" disabled="@(!userCanInput)" @bind-Value="currMediaStream.FFmpegArg"></InputText>
+    </div>
+
+    <div class="form-check-inline">
+        <InputRadioGroup @bind-Value="currMediaStream.Stop">
+            <InputRadio class="form-check-input" id="Stop0" Value="0" disabled="@(!userCanInput)"/>
+            <label class="form-check-label" for="Stop0">启用</label>
+                
+            <InputRadio class="form-check-input ms-3" id="Stop1" Value="1" disabled="@(!userCanInput)"/>
+            <label class="form-check-label" for="Stop1">停用</label>
+        </InputRadioGroup>
+    </div>
+    
+    <br />
+    <br />
+
+    @if (PostResult != null)
+    {
+        if(PostResult.code == 0)
+        {
+            <div class="alert alert-success pt-1 pb-1" role="alert">
+              保存成功！
+            </div>        
+        }
+        else
+        {
+            <div class="alert alert-danger pt-1 pb-1" role="alert">
+                @PostResult.message
+            </div>
+        }
+    }
+
+    <div class="d-flex w-100 justify-content-between">
+        <div class="d-flex justify-content-start gap-1">
+            <button type="button" @onclick="editClick" class="btn btn-outline-primary @(editButtonVisible==false?"d-none":"")" >
+                <i class="bi bi-pencil"></i> 修改
+            </button>
+            <button type="button" class="btn btn-outline-danger @(deleteButtonVisible==false?"d-none":"")" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="bi bi-trash"></i> 删除
+            </button>
+            @if(isPosting)
+            {
+                <button type="submit" class="btn btn-primary @(saveButtonVisible==false?"d-none":"")" disabled>
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <i class="bi bi-save"></i> 保存
+                </button>                
+            }
+            else
+            {
+                <button type="submit" class="btn btn-primary @(saveButtonVisible==false?"d-none":"")" >
+                    <i class="bi bi-save"></i> 保存
+                </button>                
+            }
+
+        </div>
+        <div class="d-flex justify-content-start gap-1">
+            <button type="button" 
+                    @onclick="viewClick"
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#videoTest" 
+                    class="btn btn-outline-primary @(canPreviewVideo==false?"d-none":"")" 
+                    aria-expanded="false" 
+                    aria-controls="videoTest">
+                <i class="bi bi-camera-reels"></i> 查看
+            </button>
+            
+            <button type="button" @onclick="undoClick" class="btn btn-outline-primary @(undoButtonVisible==false?"d-none":"")">
+                <i class="bi bi-arrow-90deg-left"></i> 取消
+            </button>
+            <a role="button" href="Admin" class="btn btn-outline-success"><i class="bi bi-arrow-left"></i> 返回</a>
+        </div>
+    </div>
+
+    <div class="collapse" id="videoTest">
+        <br />
+        <video  id="@currMediaStream.StreamId"
+                style="width:100%;height:auto"
+                muted
+                controls="controls" autoplay="autoplay"
+                x-webkit-airplay="true" x5-video-player-fullscreen="true"
+                preload="auto" playsinline="true" webkit-playsinline
+                x5-video-player-type="h5">
+
+        </video>    
+    </div>
+
+</EditForm>
+
+<!-- Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">删除确认</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+            此操作将删除视频流的配置，您不能恢复，是否继续？
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-danger" @onclick="deleteClick" >删除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@code {
+    private MediaStream currMediaStream=new MediaStream
+    {
+        StreamId = "",
+        StreamType ="RTSP",
+        StreamURL ="",
+        FFmpegArg = "",
+        Stop = 0,
+        CreateDateTime = long.Parse(DateTime.Now.ToString("yyyyMMddHHmmss")),
+        Title =$"房间{Guid.NewGuid().ToString()}"
+    };
+
+    [Parameter]
+    public string? streamId { get; set; }
+
+    bool isAdd = false;
+    bool canPreviewVideo = false;
+    bool editButtonVisible = true;
+    bool deleteButtonVisible = true;
+    bool undoButtonVisible = false;
+    bool saveButtonVisible = true;
+    bool userCanInput = true;
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine($"streamId:{streamId}");
+
+        isAdd = string.IsNullOrEmpty(streamId);
+
+        if(isAdd)
+        {
+            editButtonVisible = false;
+            deleteButtonVisible = false;
+            undoButtonVisible = false;
+            userCanInput = true;
+        }
+        else
+        {
+            saveButtonVisible = false;
+            userCanInput = false;
+        }
+
+        if(!string.IsNullOrEmpty(streamId))
+        {
+            currMediaStream = await MediaStreamService.GetMediaStreamAsync(streamId);    
+        }
+        else
+        {
+            currMediaStream = new MediaStream
+                {
+                    StreamId = "",
+                    StreamType ="RTSP",
+                    StreamURL ="",
+                    FFmpegArg = "",
+                    Stop = 0,
+                    CreateDateTime = long.Parse(DateTime.Now.ToString("yyyyMMddHHmmss")),
+                    Title =$"房间{Guid.NewGuid().ToString()}"
+                };            
+        }
+        canPreviewVideo = isAdd==false && currMediaStream.Stop==0;
+    }
+
+    private void editClick()
+    {
+        deleteButtonVisible = false;
+        editButtonVisible = false;
+        saveButtonVisible = true;
+        undoButtonVisible = true;
+        canPreviewVideo = false;
+        userCanInput = true;
+        this.StateHasChanged();
+    }
+    private void undoClick()
+    {
+        if(isAdd)
+            NavigationManager.NavigateTo("MediaStreamEdit", true);
+        else 
+            NavigationManager.NavigateTo($"MediaStreamEdit/{streamId}", true);
+        //deleteButtonVisible = true;
+        //editButtonVisible = true;
+        //saveButtonVisible = false;
+        //undoButtonVisible = false;
+        //canPreviewVideo = !isAdd && currMediaStream.Stop==0;
+        //userCanInput = false;
+        //this.StateHasChanged();
+    }
+
+    private async Task viewClick()
+    {
+        await JS.InvokeVoidAsync("displayVideo", currMediaStream.StreamId);
+    }
+
+    private async Task deleteClick()
+    {
+        PostResult = await MediaStreamService.DeleteAsync(currMediaStream);
+        if(PostResult !=null && PostResult.code ==0)
+        {
+            NavigationManager.NavigateTo("admin", true);
+        }
+        else
+        {
+            this.StateHasChanged();
+        }
+
+    }
+
+    private void clickStreamUrl()
+    {
+        if(string.IsNullOrEmpty(currMediaStream.StreamURL))
+        {
+            currMediaStream.StreamURL = "rtsp://admin:KTTHVE@192.168.137.239:554/h265/ch1/main/av_stream";
+        }
+    }
+    private void clickFFmpegArg()
+    {
+        if(string.IsNullOrEmpty(currMediaStream.FFmpegArg))
+        {
+            currMediaStream.FFmpegArg = "-i {input} -fflags flush_packets -max_delay 2 -hls_flags delete_segments -hls_time 2 -g 30 {output}";
+        }
+    }
+
+    private ApiResult PostResult;
+    private bool isPosting{ get; set; } =false;
+    private async Task HandleValidSubmit()
+    {
+        isPosting = true;
+        undoButtonVisible = false;
+        await Task.Delay(1);        // flushing changes. The trick!!
+        //this.StateHasChanged();
+        var PostResult = await MediaStreamService.SaveAsync(currMediaStream);
+        //System.Threading.Thread.Sleep(5000);
+        if(PostResult !=null && PostResult.code ==0)
+        {
+            undoButtonVisible = false;
+            NavigationManager.NavigateTo("admin", true);
+        }
+        else
+        {
+            this.StateHasChanged();
+        }
+        isPosting = false;
+        //if (response.IsSuccessStatusCode)
+        //{
+        //}
+        //Logger.LogInformation("HandleValidSubmit called");
+        // Process the valid form
+    }
+
+    //protected override async Task OnAfterRenderAsync(bool firstRender)
+    //{
+    //    await JS.InvokeVoidAsync("displayTooltip", "StreamUrlTooltip");
+    //    await JS.InvokeVoidAsync("displayTooltip", "FFmpegArgTooltip");
+    //}
+
+}

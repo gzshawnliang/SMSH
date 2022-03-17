@@ -1,0 +1,88 @@
+﻿@page "/admin"
+@using SMSH.Data;
+@inject MediaStreamService MediaStreamService
+
+<h3>配置监控视频</h3>
+
+<div class="d-flex justify-content-center align-items-center @(isLoading?"":"d-none")">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<div class="list-group">
+    @if (VideoStreamList != null)
+    {
+        foreach (var mediaStream in VideoStreamList)
+        {
+            Uri uri=null;
+            try
+            {
+                uri = new Uri(mediaStream.StreamURL);
+            }
+            catch{};
+
+            <a href="MediaStreamEdit/@mediaStream.StreamId" class="list-group-item list-group-item-action" aria-current="true">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">
+                        @if(mediaStream.Stop==1 || uri ==null)
+                        {
+                            <i class="bi bi-camera-video-off" style="color:var(--bs-danger)"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-camera-video-fill" style="color:var(--bs-green)"></i>
+                        }
+
+                        @if(string.IsNullOrEmpty(mediaStream.Title))
+                        {
+                            <span class="m-1">@mediaStream.StreamId</span>
+                        }
+                        else
+                        {
+                            <span class="m-1">@mediaStream.Title </span>
+                        }
+                    </h5>
+                    <small>No: @mediaStream.StreamId </small>
+                </div>
+                @if(uri !=null)
+                {
+                    <p class="mb-1 text-break">  @($"{uri.Scheme}://{uri.Host}{uri.AbsolutePath}") </p>
+                }
+                else 
+                {
+                    <p class="mb-1 text-break">  </p>
+                }
+            
+                <div class="d-flex w-100 justify-content-between">
+                    <small> ffmpeg.exe - @mediaStream.ProcessId </small>
+                </div>
+            </a>        
+        }
+    }
+</div>
+
+<br/>
+<div class="d-grid gap-2">
+    <a href ="MediaStreamEdit" class="btn btn-primary">
+        <i class="bi bi-plus-circle-fill"></i> 增加
+    </a>
+</div>
+
+<br/>
+
+@code {
+    private bool isLoading = true;
+    List<MediaStream> VideoStreamList;
+    protected override async Task OnInitializedAsync()
+    {
+        VideoStreamList= await MediaStreamService.AllAsync();   
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        isLoading = false;
+        this.StateHasChanged();
+        return base.OnAfterRenderAsync(firstRender);
+    }
+}

@@ -1,0 +1,220 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace SMSH.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <base href="~/" />
+    <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="lib/bootstrap-icons-1.8.1/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="SMSH.styles.css" rel="stylesheet" />
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <meta name="theme-color" content="#ffffff">
+
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    @RenderBody()
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="/" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <div id="components-reconnect-modal" class="my-reconnect-modal components-reconnect-hide">
+        <div class="show">
+@*            <div class="d-flex align-items-center justify-content-center flex-column h-100">
+                <div class="alert alert-warning" role="alert">
+                    <div class="spinner-border text-light" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    正在连接服务器...
+                </div>    
+            </div>*@
+            <div class="d-flex align-items-center justify-content-center flex-column h-100">
+                <div class="alert alert-warning d-flex align-items-center justify-content-center mb-0" role="alert">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div><span class="ms-2">正在连接服务器...</span>
+                </div>
+            </div>
+
+        </div>
+        <div class="failed">
+            <div class="d-flex align-items-center justify-content-center flex-column h-100">
+              <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    服务器连接失败。
+              </div>    
+              <button type="button" class="btn btn-link fs-5" onclick="window.Blazor.reconnect();">重新连接</button>
+            </div>
+        </div>
+        <div class="rejected">
+            <div class="d-flex align-items-center justify-content-center flex-column h-100">
+              <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    服务器已经重置。
+              </div>  
+              <button type="button" class="btn btn-link fs-5" onclick="window.location.reload();">重新连接</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .my-reconnect-modal > div {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+            overflow: hidden;
+            background-color: #fff;
+            opacity: 0.75;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .components-reconnect-hide > div {
+            display: none;
+        }
+
+        .components-reconnect-show > div {
+            display: none;
+        }
+
+        .components-reconnect-show > .show {
+            display: block;
+        }
+
+        .components-reconnect-failed > div {
+            display: none;
+        }
+
+        .components-reconnect-failed > .failed {
+            display: block;
+        }
+
+        .components-reconnect-refused > div {
+            display: none;
+        }
+
+        .components-reconnect-refused > .refused {
+            display: block;
+        }
+    </style>
+
+    <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+    <script src="lib/hls/hls.min.js"></script>
+    <script>
+        function displayVideo(id) {
+            var video = document.getElementById(id);
+            if (typeof video === null || video === 'undefined') {
+                return;
+            }
+
+            var videoSrc = 'MediaContent/HLS/' + id + '/index.m3u8';
+            if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = videoSrc;
+                //
+                // If no native HLS support, check if HLS.js is supported
+                //
+            } else if (Hls.isSupported()) {
+                var hls = new Hls();
+                hls.loadSource(videoSrc);
+                hls.attachMedia(video);
+            }
+        };
+        function displayTooltip(id) {
+            var tooltipEl = document.getElementById(id);
+            new bootstrap.Tooltip(tooltipEl)
+        };
+    </script>
+
+    <script>
+        async function connectionDown(options) {
+            console.log("Connection Down - you could do some UI here...");
+            var reconnectModal=document.querySelector('#components-reconnect-modal');
+            if (!reconnectModal.classList.contains('components-reconnect-show'))
+            {
+                reconnectModal.classList.add('components-reconnect-show');
+            }
+            for (let i = 0; i < options.maxRetries; i++) {
+                console.log("Waiting for reconnect attempt #"+(i+1)+" ...");
+                await this.delay(options.retryIntervalMilliseconds);
+                if (this.isDisposed) {
+                    break;
+                }
+
+                try {
+                    // reconnectCallback will asynchronously return:
+                    // - true to mean success
+                    // - false to mean we reached the server, but it rejected the connection (e.g., unknown circuit ID)
+                    // - exception to mean we didn't reach the server (this can be sync or async)
+                    console.log("Starting Reconnect attempt #"+(i+1)+" ...");
+                    const result = await window.Blazor.reconnect();
+                    if (!result) {
+                        // If the server responded and refused to reconnect, log it 
+                        console.error("Server Rejected");
+                        location.reload();
+                    } else {
+                        // Reconnected!
+                        return;
+                    }
+                } catch (err) {
+                    // We got an exception so will try again 
+                    console.error(err);
+                }
+            }
+            // all attempts failed - let's try a full reload
+            // This could be a UI change instead or something more complicated
+            location.reload();
+        }
+
+        function delay(durationMilliseconds) {
+            return new Promise(resolve => setTimeout(resolve, durationMilliseconds));
+        }
+
+        function connectionUp(e) {
+            // Reconnected
+            console.log("Connection UP!");
+
+            // if you have a UI to hide/change you can do that here.
+            var reconnectModal=document.querySelector('#components-reconnect-modal');
+            if (reconnectModal.classList.contains('components-reconnect-show'))
+            {
+                reconnectModal.classList.remove('components-reconnect-show');
+            }
+        }
+
+        window.Blazor.start({
+            reconnectionOptions: {
+                maxRetries: 6000,
+                retryIntervalMilliseconds: 500,
+            },
+            reconnectionHandler: {
+                onConnectionDown: e => connectionDown(e),
+                onConnectionUp: e => connectionUp(e)
+            }
+        });
+    </script>
+
+</body>
+</html>
