@@ -124,22 +124,39 @@
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script src="lib/hls/hls.min.js"></script>
     <script>
+        var hlsDict = new Array();
+
         function displayVideo(id) {
             var video = document.getElementById(id);
             if (typeof video === null || video === 'undefined') {
                 return;
             }
 
+            console.log("displayVideo:"+id);
+
             var videoSrc = 'MediaContent/HLS/' + id + '/index.m3u8';
+
+            //
+            // First check for native browser HLS support
+            //
             if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = videoSrc;
-                //
-                // If no native HLS support, check if HLS.js is supported
-                //
+            //
+            // If no native HLS support, check if HLS.js is supported
+            //
             } else if (Hls.isSupported()) {
+                if(hlsDict.hasOwnProperty(id)){
+                    hlsDict[id].destroy();
+                    video.src="";
+                    delay(500);
+                }
                 var hls = new Hls();
+                video.muted = true;
+                //video.autoplay = false;
                 hls.loadSource(videoSrc);
                 hls.attachMedia(video);
+                hlsDict[id]=hls;                
+
             }
         };
         function displayTooltip(id) {
@@ -202,6 +219,10 @@
             {
                 reconnectModal.classList.remove('components-reconnect-show');
             }
+            var allVideos  = document.querySelectorAll("video");
+            [].forEach.call(allVideos, function(video) {
+                displayVideo(video.id);
+            });
         }
 
         window.Blazor.start({
