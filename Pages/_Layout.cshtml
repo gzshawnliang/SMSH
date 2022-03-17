@@ -219,8 +219,8 @@
             {
                 reconnectModal.classList.remove('components-reconnect-show');
             }
-            var allVideos  = document.querySelectorAll("video");
-            [].forEach.call(allVideos, function(video) {
+
+            document.querySelectorAll("video").forEach((video) => {
                 displayVideo(video.id);
             });
         }
