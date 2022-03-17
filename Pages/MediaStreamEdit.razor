@@ -28,11 +28,16 @@
 
     <div class="form-check-inline">
         <InputRadioGroup @bind-Value="currMediaStream.Stop">
-            <InputRadio class="form-check-input" id="Stop0" Value="0" disabled="@(!userCanInput)"/>
-            <label class="form-check-label" for="Stop0">启用</label>
-                
-            <InputRadio class="form-check-input ms-3" id="Stop1" Value="1" disabled="@(!userCanInput)"/>
-            <label class="form-check-label" for="Stop1">停用</label>
+            
+            <label class="form-check-label" >
+                <InputRadio class="form-check-input" id="Stop0" Value="0" disabled="@(!userCanInput)"/>
+                启用
+            </label>
+            
+            <label class="form-check-label">
+                <InputRadio class="form-check-input ms-3" id="Stop1" Value="1" disabled="@(!userCanInput)"/>
+                停用
+            </label>
         </InputRadioGroup>
     </div>
     
