@@ -1,4 +1,4 @@
-D:\codes\SMSH\FFmpeg\ffmpeg -re -stream_loop -1 -i "30 Most Beautiful Cities in the World - Travel Video.mp4" -vcodec h264 -acodec aac -f rtsp -rtsp_transport tcp rtsp://200.200.200.140:554/test1
-D:\codes\SMSH\FFmpeg\ffmpeg -re -stream_loop -1 -i "The wild ride - GLACIER EXPRESS.mp4" -vcodec h264 -acodec aac -f rtsp -rtsp_transport tcp rtsp://200.200.200.140:554/test5
-D:\codes\SMSH\FFmpeg\ffmpeg -re -stream_loop -1 -i "Top 13 US National Parks  [Amazing Places 4K].mp4" -vcodec h264 -acodec aac -f rtsp -rtsp_transport tcp rtsp://200.200.200.140:554/test4
-D:\codes\SMSH\FFmpeg\ffmpeg -re -stream_loop -1 -i "Guangzhou China. Modern Bustling City in Southern China.mp4" -vcodec h264 -acodec aac -f rtsp -rtsp_transport tcp rtsp://200.200.200.140:554/test3
+..\FFmpeg\ffmpeg -re -stream_loop -1 -i "30 Most Beautiful Cities in the World - Travel Video.mp4" -vcodec h264 -acodec aac -f rtsp -rtsp_transport tcp rtsp://200.200.200.140:554/test1
+..\FFmpeg\ffmpeg -re -stream_loop -1 -i "The wild ride - GLACIER EXPRESS.mp4" -vcodec h264 -acodec aac -f rtsp -rtsp_transport tcp rtsp://200.200.200.140:554/test5
+..\FFmpeg\ffmpeg -re -stream_loop -1 -i "Top 13 US National Parks  [Amazing Places 4K].mp4" -vcodec h264 -acodec aac -f rtsp -rtsp_transport tcp rtsp://200.200.200.140:554/test4
+..\FFmpeg\ffmpeg -re -stream_loop -1 -i "Guangzhou China. Modern Bustling City in Southern China.mp4" -vcodec h264 -acodec aac -f rtsp -rtsp_transport tcp rtsp://200.200.200.140:554/test3
