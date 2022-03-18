@@ -44,7 +44,7 @@ namespace SMSH.Utils
                 if(p!=null)
                 {
                     FileInfo fi = new FileInfo(m3u8File);
-                    if ((DateTime.Now - fi.LastWriteTime).TotalSeconds < 120)   //文件未过期 一直在拉流
+                    if ((DateTime.Now - fi.LastWriteTime).TotalSeconds < Global.M3u8FileExpiredSeconds)   //文件未过期 一直在拉流
                     {
                         return true;
                     }
