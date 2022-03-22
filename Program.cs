@@ -24,9 +24,13 @@ app.UseStaticFiles();
 var m3u8FileProvider = new FileExtensionContentTypeProvider();
 m3u8FileProvider.Mappings[".m3u8"] = "application/x-mpegurl";
 
+string hlsPath = Path.Combine(Directory.GetCurrentDirectory(), "MediaContent", "HLS");
+if(!Directory.Exists(hlsPath))
+    Directory.CreateDirectory(hlsPath);
+
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "MediaContent", "HLS")),
+    FileProvider = new PhysicalFileProvider(hlsPath),
     RequestPath = new PathString("/" + SMSH.Global.M3u8FileDir),
     ContentTypeProvider = m3u8FileProvider
     //ServeUnknownFileTypes = true
