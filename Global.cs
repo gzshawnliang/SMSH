@@ -12,6 +12,5 @@ namespace SMSH
         public const string M3u8FileDir = "MediaContent/HLS";
         public const int M3u8FileExpiredSeconds = 30;               //m3u8文件未过期秒数，超过表示FFmpeg没有在拉流
         public const string FFmpegExe = "FFmpeg/ffmpeg.exe";
-        
     }
 }
