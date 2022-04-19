@@ -98,3 +98,6 @@ Google Web Fonts Helper<br/>
 How to Host Google Fonts on Your Own Server<br/>
 https://sebastiandedeyne.com/self-hosting-google-fonts/ <br/>
 https://google-webfonts-helper.herokuapp.com/fonts <br/>
+
+Background tasks with hosted services in ASP.NET Core <br/>
+https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services?view=aspnetcore-6.0&tabs=visual-studio

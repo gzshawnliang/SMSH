@@ -151,5 +151,25 @@ namespace SMSH.Utils
             return false;
 
         }
+
+        public void StartAll()
+        {
+            List<dynamic> videoStreamList;
+            string sql = $"SELECT StreamId,Stop FROM MediaStream WHERE StreamURL IS NOT NULL AND FFmpegArg IS NOT NULL;";
+            using (var connection = new SqliteConnection($"Data Source={Global.DbFileName}"))
+                videoStreamList = connection.Query<dynamic>(sql).ToList();
+
+            foreach (var videoStream in videoStreamList)
+            {
+                if (videoStream.Stop == 0 && !IsRuning(videoStream.StreamId))
+                {
+                    Start(videoStream.StreamId);
+                }
+                else if (videoStream.Stop == 1)
+                {
+                    Stop(videoStream.StreamId);
+                }
+            }
+        }
     }
 }
