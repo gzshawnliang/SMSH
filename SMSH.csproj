@@ -9,11 +9,15 @@
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="DataStorage\" />
     <Folder Include="MediaContent\HLS\" />
+    <Folder Include="MediaContent\HLS\12d2b056\" />
+    <Folder Include="MediaContent\HLS\12d2b057\" />
+    <Folder Include="MediaContent\HLS\caddc484\" />
     <Folder Include="wwwroot\lib\bootstrap\fonts\" />
   </ItemGroup>
 

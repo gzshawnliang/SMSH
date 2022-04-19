@@ -15,22 +15,23 @@ namespace SMSH.Data
             _env = env;
         }
 
-        public Task<List<Tuple<string, string>>> GetAvailableAsync()
+        public Task<List<Tuple<string, string,bool>>> GetAvailableAsync()
         {
             List<dynamic> videoStreamList;
             //string sql = $"SELECT StreamId,Title FROM MediaStream WHERE Stop=0 AND StreamURL IS NOT NULL AND FFmpegArg IS NOT NULL AND ProcessId > 0;";
-            string sql = $"SELECT StreamId,Title FROM MediaStream WHERE Stop=0 AND StreamURL IS NOT NULL AND FFmpegArg IS NOT NULL;";
+            string sql = $"SELECT StreamId,Title,Debug FROM MediaStream WHERE Stop=0 AND StreamURL IS NOT NULL AND FFmpegArg IS NOT NULL;";
             using (var connection = new SqliteConnection($"Data Source={Global.DbFileName}"))
                 videoStreamList = connection.Query<dynamic>(sql).ToList();
 
-            var VideoStreamList = new List<Tuple<string, string>>();
+            var VideoStreamList = new List<Tuple<string, string,bool>>();
             foreach (var videoStream in videoStreamList)
             {
-                MediaStreamManager mediaStreamManager = new MediaStreamManager(_env);
-                if (mediaStreamManager.IsRuning(videoStream.StreamId) || mediaStreamManager.Start(videoStream.StreamId) == true)
-                {
-                    VideoStreamList.Add(new Tuple<string, string>(videoStream.StreamId, videoStream.Title));
-                }
+                //MediaStreamManager mediaStreamManager = new MediaStreamManager(_env);
+                //if (mediaStreamManager.IsRuning(videoStream.StreamId) || mediaStreamManager.Start(videoStream.StreamId) == true)
+                //{
+                //    VideoStreamList.Add(new Tuple<string, string>(videoStream.StreamId, videoStream.Title));
+                //}
+                VideoStreamList.Add(new Tuple<string, string,bool>(videoStream.StreamId, videoStream.Title, videoStream.Debug==1?true:false));
             }
             return Task.FromResult(VideoStreamList);
         }
@@ -140,15 +141,15 @@ namespace SMSH.Data
 
             if (result > 0)
             {
-                MediaStreamManager mediaStreamManager = new MediaStreamManager(_env);
-                if (currMediaStream.Stop == 0)
-                {
-                    mediaStreamManager.Start(currStreamId);
-                }
-                else
-                {
-                    mediaStreamManager.Stop(currStreamId);
-                }
+                //MediaStreamManager mediaStreamManager = new MediaStreamManager(_env);
+                //if (currMediaStream.Stop == 0)
+                //{
+                //    mediaStreamManager.Start(currStreamId);
+                //}
+                //else
+                //{
+                //    mediaStreamManager.Stop(currStreamId);
+                //}
 
                 return Task.FromResult(new ApiResult
                 {

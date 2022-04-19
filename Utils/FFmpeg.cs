@@ -5,12 +5,14 @@ namespace SMSH.Utils
     public class FFmpeg
     {
         //private const string FFMPEG_EXE = "FFmpeg/ffmpeg.exe";
-
-        private void Initialize()
+        private string FFMPEG_EXE;
+        public FFmpeg(string workingDir)
         {
-            if (!File.Exists(Global.FFmpegExe))
+            FFMPEG_EXE = Path.Combine(workingDir, Global.FFmpegExe);
+            if (!File.Exists(FFMPEG_EXE))
                 throw new ApplicationException("Could not find a copy of ffmpeg.exe");
         }
+
         public void Stop(int processId)
         {
             Process p = null;
@@ -27,7 +29,7 @@ namespace SMSH.Utils
             }
             p?.Kill(true);
         }
-        public int Start(string argument)
+        public int Start(string argument,bool showConsole)
         {
             //ffmpeg.exe -i rtsp://200.200.200.140/test1 -fflags flush_packets -max_delay 2 -hls_flags delete_segments -hls_time 2 -g 30 test-1.m3u8
             Process p = null;
@@ -35,10 +37,13 @@ namespace SMSH.Utils
             {
                 var startInfo = new ProcessStartInfo
                 {
-                    FileName = Global.FFmpegExe,
+
+                    FileName = FFMPEG_EXE,
                     Arguments = argument,
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
+                    //CreateNoWindow = true,
+                    //UseShellExecute = false,
+                    CreateNoWindow = !showConsole,
+                    UseShellExecute = showConsole,
                     Verb = "RunAs"  //以管理员身份运行
                 };
 

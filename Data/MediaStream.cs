@@ -10,5 +10,6 @@ namespace SMSH.Data
         public string FFmpegArg { get; set; }
         public string Title { get; set; }
         public int? ProcessId { get; set; }
+        public int Debug { get; set; }
     }
 }

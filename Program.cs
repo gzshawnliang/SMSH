@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<MediaStreamService>();
+builder.Services.AddHostedService<SMSH.Utils.ScheduleTaskCheckService>();
 
 var app = builder.Build();
 

@@ -141,6 +141,17 @@
             //
             if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = videoSrc;
+
+                video.addEventListener('error', () => {
+                  console.error(`Error H5 video loading: ${videoSrc}`);
+                  setTimeout(function(){displayVideo(id)},10000);
+                });
+
+                video.addEventListener('stalled', (event) => {
+                  console.log('H5 video Failed to fetch data, but trying.');
+                  setTimeout(function(){displayVideo(id)},10000);
+                });
+
             //
             // If no native HLS support, check if HLS.js is supported
             //
@@ -157,6 +168,17 @@
                 hls.attachMedia(video);
                 hlsDict[id]=hls;                
 
+                hls.on(Hls.Events.ERROR, function (event, data) {
+                    console.log('hls error encountered, try to recover:'+id);
+                    setTimeout(function(){displayVideo(id)},10000);
+                });
+
+                hls.on(Hls.Events.BUFFER_EOS , function (event, data) {
+                        console.log(
+                          'BUFFER_EOS :' + id
+                        );
+                        setTimeout(function(){displayVideo(id)},30*1000);
+                      });
             }
         };
         function displayTooltip(id) {

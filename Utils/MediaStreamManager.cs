@@ -34,9 +34,19 @@ namespace SMSH.Utils
                     try
                     {
                         p = Process.GetProcessById(int.Parse(processId));
+                        if(p.ProcessName.ToLower() == "ffmpeg")
+                        {
+                            Console.WriteLine($"Process - {processId}:OK");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Process - {processId}:faile");
+                            p = null;
+                        }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Console.WriteLine($"Process - {processId}:Exception:{ex.Message}");
                         p = null;
                     }
                 }
@@ -71,11 +81,7 @@ namespace SMSH.Utils
                 return false;
             int processId = mediaStream.ProcessId ?? 0;
             string m3u8Dir = $"{_env.ContentRootPath}{Global.M3u8FileDir}\\{mediaStream.StreamId}";
-            string m3u8File = M3u8File(mediaStream.StreamId);
-
-            mediaStream.FFmpegArg = mediaStream.FFmpegArg.Replace("{input}", mediaStream.StreamURL);
-            mediaStream.FFmpegArg = mediaStream.FFmpegArg.Replace("{output}", m3u8File);
-            var ffmpeg = new FFmpeg();
+            var ffmpeg = new FFmpeg(_env.ContentRootPath);
             if (processId > 0)
             {
                 ffmpeg.Stop(processId);
@@ -103,7 +109,7 @@ namespace SMSH.Utils
 
             mediaStream.FFmpegArg = mediaStream.FFmpegArg.Replace("{input}", mediaStream.StreamURL);
             mediaStream.FFmpegArg = mediaStream.FFmpegArg.Replace("{output}", m3u8File);
-            var ffmpeg = new FFmpeg();
+            var ffmpeg = new FFmpeg(_env.ContentRootPath);
             if (processId > 0)
             {
                 ffmpeg.Stop(processId);
@@ -116,7 +122,7 @@ namespace SMSH.Utils
             {
                 Directory.CreateDirectory(m3u8Dir);
             }
-            processId = ffmpeg.Start(mediaStream.FFmpegArg);
+            processId = ffmpeg.Start(mediaStream.FFmpegArg, mediaStream.Debug==1?true:false);
 
             if (processId > 0)
             {

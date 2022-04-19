@@ -10,7 +10,13 @@
     <div class="card mb-2" style="margin-bottom:8px">
         <div class="card-header pt-1 pb-1">
             <div class="d-flex w-100 align-items-center justify-content-between">
-                <span class="fw-bold text-primary">@videoItem.Item2</span>
+                <span class="fw-bold text-primary">
+                    @videoItem.Item2
+                    @if(videoItem.Item3==true)
+                    {
+                        <span> - @videoItem.Item1</span>
+                    }
+                </span>
                 <button @onclick="() => OnClickRefreshVideo(videoItem.Item1)" type="button" class="btn btn-link btn-sm"><i class="bi bi-arrow-repeat"></i></button>
             </div>
         </div>
@@ -34,7 +40,7 @@
 @code
 {
     bool isCalledJs = false;
-    List<Tuple<string, string>> VideoStreamList = new List<Tuple<string, string>>();
+    List<Tuple<string, string,bool>> VideoStreamList = new List<Tuple<string, string,bool>>();
     protected override async Task OnInitializedAsync() => VideoStreamList= await MediaStreamService.GetAvailableAsync();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
