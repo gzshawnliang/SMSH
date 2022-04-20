@@ -142,6 +142,9 @@
             if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = videoSrc;
 
+                //H5 Runtime Events
+                //https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events
+                //https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/stalled_event
                 video.addEventListener('error', () => {
                   console.error(`Error H5 video loading: ${videoSrc}`);
                   setTimeout(function(){displayVideo(id)},10000);
@@ -168,6 +171,9 @@
                 hls.attachMedia(video);
                 hlsDict[id]=hls;                
 
+                //HLS.js Runtime Events
+                //https://github.com/video-dev/hls.js/blob/master/docs/API.md#runtime-events
+                //
                 hls.on(Hls.Events.ERROR, function (event, data) {
                     console.log('hls error encountered, try to recover:'+id);
                     setTimeout(function(){displayVideo(id)},10000);
